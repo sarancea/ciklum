@@ -23,10 +23,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="composer.json" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="composer.json" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/composer.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="18" column="5" selection-start="491" selection-end="491" vertical-scroll-proportion="0.28183717" vertical-offset="0" max-vertical-offset="958">
+            <state line="7" column="29" selection-start="178" selection-end="178" vertical-scroll-proportion="-4.375" vertical-offset="0" max-vertical-offset="405">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Procfile" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Procfile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="42" selection-start="42" selection-end="42" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="90">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/index.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="6" column="24" selection-start="218" selection-end="218" vertical-scroll-proportion="0.09394572" vertical-offset="0" max-vertical-offset="958">
               <folding />
             </state>
           </provider>
@@ -68,9 +86,10 @@
         <option value="$PROJECT_DIR$/public/index.php" />
         <option value="$PROJECT_DIR$/public/.htaccess" />
         <option value="$PROJECT_DIR$/public/server.php" />
-        <option value="$PROJECT_DIR$/composer.json" />
         <option value="$PROJECT_DIR$/config/autoload/doctrine.local.php" />
+        <option value="$PROJECT_DIR$/composer.json" />
         <option value="$PROJECT_DIR$/Procfile" />
+        <option value="$PROJECT_DIR$/index.php" />
       </list>
     </option>
   </component>
@@ -343,13 +362,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Procfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="41" selection-start="41" selection-end="41" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="982">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config/autoload/doctrine.local.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="16" column="2" selection-start="546" selection-end="546" vertical-scroll-proportion="-10.0" vertical-offset="0" max-vertical-offset="330">
@@ -359,7 +371,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/composer.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="5" selection-start="491" selection-end="491" vertical-scroll-proportion="0.28183717" vertical-offset="0" max-vertical-offset="958">
+        <state line="7" column="29" selection-start="178" selection-end="178" vertical-scroll-proportion="-4.375" vertical-offset="0" max-vertical-offset="405">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Procfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="42" selection-start="42" selection-end="42" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="982">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="24" selection-start="218" selection-end="218" vertical-scroll-proportion="0.09394572" vertical-offset="0" max-vertical-offset="958">
           <folding />
         </state>
       </provider>
