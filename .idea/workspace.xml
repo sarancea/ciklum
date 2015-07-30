@@ -383,6 +383,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/composer.lock">
+      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4611" column="19" selection-start="174619" selection-end="174621" vertical-scroll-proportion="0.8385361" vertical-offset="68386" max-vertical-offset="69315">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/composer.json">
       <provider selected="true" editor-type-id="text-editor">
         <state line="8" column="29" selection-start="202" selection-end="202" vertical-scroll-proportion="0.12526096" vertical-offset="0" max-vertical-offset="958">
