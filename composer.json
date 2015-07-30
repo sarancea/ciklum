@@ -5,6 +5,7 @@
 
     "require": {
         "php": ">=5.4",
+        "ext-pdo_pgsql": "*",
 
         "zendframework/zendframework": "2.*",
         "doctrine/doctrine-orm-module": "0.*"
