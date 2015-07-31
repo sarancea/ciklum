@@ -1,0 +1,1 @@
+var customerAddFormTemplate = '<form id=""></form>';

@@ -1,8 +1,46 @@
 <html>
 <head>
-    <title></title>
+    <title>Administration portal</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="css/style.css" rel="stylesheet">
+
 </head>
 <body>
-<nav></nav>
+<div class="container">
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                </ul>
+                <ul class="nav navbar-nav">
+                    <li><a href="#!/cusotmer/add">Add new customer</a></li>
+                </ul>
+
+                <ul class="nav navbar-nav">
+                    <li><a href="#!/cusotmer/list">List all customers</a></li>
+                </ul>
+
+                <ul class="nav navbar-nav">
+                    <li><a href="#!/call/add">Add new call</a></li>
+                </ul>
+
+                <ul class="nav navbar-nav">
+                    <li><a href="#!/call/list">List all calls</a></li>
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+</div>
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.router.js"></script>
 </body>
 </html>
