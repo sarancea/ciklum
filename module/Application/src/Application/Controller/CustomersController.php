@@ -17,4 +17,12 @@ class CustomersController extends ApiAbstract
      * @var string
      */
     protected $entityClass = 'Application\Entity\Customer';
+
+
+    /**
+     *
+     * The form class
+     * @var string
+     */
+    protected $formClass = 'Applications\Form\CustomerForm';
 }

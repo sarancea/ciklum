@@ -1,10 +1,13 @@
 <?php
 namespace Application\Library\Controller;
 
+use Application\Library\Exception\ValidationException;
+use Doctrine\Entity;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
 use Zend\EventManager\EventManagerInterface;
+use Zend\Form\Form;
 use Zend\Http\Response;
 use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\Mvc\MvcEvent;
@@ -32,6 +35,13 @@ abstract class ApiAbstract extends AbstractRestfulController
      * @var string
      */
     protected $entityClass = null;
+
+    /**
+     *
+     * The form name
+     * @var string
+     */
+    protected $formClass = null;
 
     /**
      * Returns the list of allowed methods
@@ -93,6 +103,99 @@ abstract class ApiAbstract extends AbstractRestfulController
 
         return new JsonModel($hydrator->extract($entity));
     }
+
+
+    /**
+     * Create a new resource
+     *
+     * @param  mixed $data
+     * @throws \Application\Library\Exception\ValidationException
+     * @return mixed
+     */
+    public function create($data)
+    {
+        /** @var Form $form */
+        $form = new $this->formClass();
+        $form->setData($data);
+
+        if (!$form->isValid()) {
+            throw new ValidationException([$this->entityClass => $form->getMessages()], 400);
+        }
+
+        /** @var Entity $matchInfo */
+        $entity = $form->getData();
+
+        $this->getEntityManager()->persist($entity);
+        $this->getEntityManager()->flush();
+
+        $hydrator = new ClassMethods();
+
+        return new JsonModel($hydrator->extract($entity));
+    }
+
+    /**
+     * Update an existing resource
+     *
+     * @param  mixed $id
+     * @param  mixed $data
+     * @throws \Doctrine\ORM\EntityNotFoundException
+     * @throws \Application\Library\Exception\ValidationException
+     * @return mixed
+     */
+    public function update($id, $data)
+    {
+        $entity = $this->getEntityManager()->find($this->entityClass, $id);
+
+        if (!$entity) {
+            throw new EntityNotFoundException('Entity not found', 404);
+        }
+
+        /** @var Form $form */
+        $form = new $this->formClass();
+        $form->bind($entity);
+
+        $form->setData($data);
+
+        if (!$form->isValid()) {
+            throw new ValidationException([$this->entityClass => $form->getMessages()], 400);
+        }
+
+
+        $this->getEntityManager()->persist($entity);
+        $this->getEntityManager()->flush();
+
+        $hydrator = new ClassMethods();
+
+        return new JsonModel($hydrator->extract($entity));
+        
+    }
+
+
+    /**
+     * Delete an existing resource
+     *
+     * @param  mixed $id
+     * @throws \Doctrine\ORM\EntityNotFoundException
+     * @return mixed
+     */
+    public function delete($id)
+    {
+        $entity = $this->getEntityManager()->find($this->entityClass, $id);
+
+        if (!$entity) {
+            throw new EntityNotFoundException('Entity not found', 404);
+        }
+        $this->getEntityManager()->remove($entity);
+        $this->getEntityManager()->flush();
+
+
+        /** @var Response $response */
+        $response = $this->getResponse();
+        $response->setStatusCode(204);
+
+        return $response;
+    }
+
 
     /**
      * Set the event manager instance used by this context
