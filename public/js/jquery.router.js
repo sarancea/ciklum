@@ -1,305 +1,208 @@
-/*
- plugin name: router
- jquery plugin to handle routes with both hash and push state
- why? why another routing plugin? because i couldnt find one that handles both hash and pushstate
- created by 24hr // camilo.tapia
- author twitter: camilo.tapia
-
- Copyright 2011  camilo tapia // 24hr (email : camilo.tapia@gmail.com)
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License, version 2, as
- published by the Free Software Foundation.
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+/*!
+ * routie - a tiny hash router
+ * v0.3.2
+ * http://projects.jga.me/routie
+ * copyright Greg Allen 2013
+ * MIT License
  */
+(function(w) {
 
+    var routes = [];
+    var map = {};
+    var reference = "routie";
+    var oldReference = w[reference];
 
-(function ($) {
+    var Route = function(path, name) {
+        this.name = name;
+        this.path = path;
+        this.keys = [];
+        this.fns = [];
+        this.params = {};
+        this.regex = pathToRegexp(this.path, this.keys, false, false);
 
-    var hasPushState = (history && history.pushState);
-    var hasHashState = !hasPushState && ("onhashchange" in window) && false;
-    var router = {};
-    var routeList = [];
-    var eventAdded = false;
-    var currentUsedUrl = location.href; //used for ie to hold the current url
-    var firstRoute = true;
-
-    // hold the latest route that was activated
-    router.currentId = "";
-    router.currentParameters = {};
-
-    router.capabilities = {
-        hash: hasHashState,
-        pushState: hasPushState,
-        timer: !hasHashState && !hasPushState
     };
 
-    // reset all routes
-    router.reset = function () {
-        var router = {};
-        var routeList = [];
-        router.currentId = "";
-        router.currentParameters = {};
-    }
+    Route.prototype.addHandler = function(fn) {
+        this.fns.push(fn);
+    };
 
-    router.add = function (route, id, callback) {
-        // if we only get a route and a callback, we switch the arguments
-        if (typeof id == "function") {
-            callback = id;
-            delete id;
-        }
-
-        var isRegExp = typeof route == "object";
-
-        if (!isRegExp) {
-
-            // remove the last slash to unifiy all routes
-            if (route.lastIndexOf("/") == route.length - 1) {
-                route = route.substring(0, route.length - 1);
+    Route.prototype.removeHandler = function(fn) {
+        for (var i = 0, c = this.fns.length; i < c; i++) {
+            var f = this.fns[i];
+            if (fn == f) {
+                this.fns.splice(i, 1);
+                return;
             }
-
-            // if the routes where created with an absolute url ,we have to remove the absolut part anyway, since we cant change that much
-            route = route.replace(location.protocol + "//", "").replace(location.hostname, "");
-        }
-
-        var routeItem = {
-            route: route,
-            callback: callback,
-            type: isRegExp ? "regexp" : "string",
-            id: id
-        }
-
-        routeList.push(routeItem);
-
-        // we add the event listener after the first route is added so that we dont need to listen to events in vain
-        if (!eventAdded) {
-            bindStateEvents();
         }
     };
 
-    function bindStateEvents() {
-        eventAdded = true;
-
-        // default value telling router that we havent replaced the url from a hash. yet.
-        router.fromHash = false;
-
-
-        if (hasPushState) {
-            // if we get a request with a qualified hash (ie it begins with #!)
-            if (location.hash.indexOf("#!/") === 0) {
-                // replace the state
-                var url = location.pathname + location.hash.replace(/^#!\//gi, "");
-                history.replaceState({}, "", url);
-
-                // this flag tells router that the url was converted from hash to popstate
-                router.fromHash = true;
-            }
-
-            $(window).bind("popstate", handleRoutes);
-        }
-        else if (hasHashState) {
-            $(window).bind("hashchange.router", handleRoutes);
-        }
-        else {
-            // if no events are available we use a timer to check periodically for changes in the url
-            setInterval(
-                function () {
-                    if (location.href != currentUsedUrl) {
-                        handleRoutes();
-                        currentUsedUrl = location.href;
-                    }
-                }, 500
-            );
-        }
-
-    }
-
-    bindStateEvents();
-
-    router.go = function (url, title) {
-        if (hasPushState) {
-            history.pushState({}, title, url);
-            checkRoutes();
-        }
-        else {
-            // remove part of url that we dont use
-            url = url.replace(location.protocol + "//", "").replace(location.hostname, "");
-            var hash = url.replace(location.pathname, "");
-
-            if (hash.indexOf("!") < 0) {
-                hash = "!/" + hash;
-            }
-            location.hash = hash;
+    Route.prototype.run = function(params) {
+        for (var i = 0, c = this.fns.length; i < c; i++) {
+            this.fns[i].apply(this, params);
         }
     };
 
-    // do a check without affecting the history
-    router.check = router.redo = function () {
-        checkRoutes(true);
+    Route.prototype.match = function(path, params){
+        var m = this.regex.exec(path);
+
+        if (!m) return false;
+
+
+        for (var i = 1, len = m.length; i < len; ++i) {
+            var key = this.keys[i - 1];
+
+            var val = ('string' == typeof m[i]) ? decodeURIComponent(m[i]) : m[i];
+
+            if (key) {
+                this.params[key.name] = val;
+            }
+            params.push(val);
+        }
+
+        return true;
     };
 
-    // parse and wash the url to process
-    function parseUrl(url) {
-        var currentUrl = url ? url : location.pathname;
+    Route.prototype.toURL = function(params) {
+        var path = this.path;
+        for (var param in params) {
+            path = path.replace('/:'+param, '/'+params[param]);
+        }
+        path = path.replace(/\/:.*\?/g, '/').replace(/\?/g, '');
+        if (path.indexOf(':') != -1) {
+            throw new Error('missing parameters for url: '+path);
+        }
+        return path;
+    };
 
-        currentUrl = decodeURI(currentUrl);
+    var pathToRegexp = function(path, keys, sensitive, strict) {
+        if (path instanceof RegExp) return path;
+        if (path instanceof Array) path = '(' + path.join('|') + ')';
+        path = path
+            .concat(strict ? '' : '/?')
+            .replace(/\/\(/g, '(?:/')
+            .replace(/\+/g, '__plus__')
+            .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, function(_, slash, format, key, capture, optional){
+                keys.push({ name: key, optional: !! optional });
+                slash = slash || '';
+                return '' + (optional ? '' : slash) + '(?:' + (optional ? slash : '') + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')' + (optional || '');
+            })
+            .replace(/([\/.])/g, '\\$1')
+            .replace(/__plus__/g, '(.+)')
+            .replace(/\*/g, '(.*)');
+        return new RegExp('^' + path + '$', sensitive ? '' : 'i');
+    };
 
-        // if no pushstate is availabe we have to use the hash
-        if (!hasPushState) {
-            if (location.hash.indexOf("#!/") === 0) {
-                currentUrl += location.hash.substring(3);
+    var addHandler = function(path, fn) {
+        var s = path.split(' ');
+        var name = (s.length == 2) ? s[0] : null;
+        path = (s.length == 2) ? s[1] : s[0];
+
+        if (!map[path]) {
+            map[path] = new Route(path, name);
+            routes.push(map[path]);
+        }
+        map[path].addHandler(fn);
+    };
+
+    var routie = function(path, fn) {
+        if (typeof fn == 'function') {
+            addHandler(path, fn);
+            routie.reload();
+        } else if (typeof path == 'object') {
+            for (var p in path) {
+                addHandler(p, path[p]);
             }
-            else {
-                return '';
+            routie.reload();
+        } else if (typeof fn === 'undefined') {
+            routie.navigate(path);
+        }
+    };
+
+    routie.lookup = function(name, obj) {
+        for (var i = 0, c = routes.length; i < c; i++) {
+            var route = routes[i];
+            if (route.name == name) {
+                return route.toURL(obj);
             }
         }
+    };
 
-        // and if the last character is a slash, we just remove it
-        currentUrl = currentUrl.replace(/\/$/, "");
+    routie.remove = function(path, fn) {
+        var route = map[path];
+        if (!route)
+            return;
+        route.removeHandler(fn);
+    };
 
-        return currentUrl;
-    }
+    routie.removeAll = function() {
+        map = {};
+        routes = [];
+    };
 
-    // get the current parameters for either a specified url or the current one if parameters is ommited
-    router.parameters = function (url) {
-        // parse the url so that we handle a unified url
-        var currentUrl = parseUrl(url);
+    routie.navigate = function(path, options) {
+        options = options || {};
+        var silent = options.silent || false;
 
-        // get the list of actions for the current url
-        var list = getParameters(currentUrl);
-
-        // if the list is empty, return an empty object
-        if (list.length == 0) {
-            router.currentParameters = {};
+        if (silent) {
+            removeListener();
         }
+        setTimeout(function() {
+            window.location.hash = path;
 
-        // if we got results, return the first one. at least for now
-        else {
-            router.currentParameters = list[0].data;
-        }
-
-        return router.currentParameters;
-    }
-
-    function getParameters(url) {
-
-        var dataList = [];
-
-        // console.log("ROUTES:");
-
-        for (var i = 0, ii = routeList.length; i < ii; i++) {
-            var route = routeList[i];
-
-            // check for mathing reg exp
-            if (route.type == "regexp") {
-                var result = url.match(route.route);
-                if (result) {
-                    var data = {};
-                    data.matches = result;
-
-                    dataList.push(
-                        {
-                            route: route,
-                            data: data
-                        }
-                    );
-
-                    // saves the current route id
-                    router.currentId = route.id;
-
-                    // break after first hit
-                    break;
-                }
-            }
-
-            // check for mathing string routes
-            else {
-                var currentUrlParts = url.split("/");
-                var routeParts = route.route.split("/");
-
-                //console.log("matchCounter ", matchCounter, url, route.route)
-
-                // first check so that they have the same amount of elements at least
-                if (routeParts.length == currentUrlParts.length) {
-                    var data = {};
-                    var matched = true;
-                    var matchCounter = 0;
-
-                    for (var j = 0, jj = routeParts.length; j < jj; j++) {
-                        var isParam = routeParts[j].indexOf(":") === 0;
-                        if (isParam) {
-                            data[routeParts[j].substring(1)] = decodeURI(currentUrlParts[j]);
-                            matchCounter++;
-                        }
-                        else {
-                            if (routeParts[j] == currentUrlParts[j]) {
-                                matchCounter++;
-                            }
-                        }
-                    }
-
-                    // break after first hit
-                    if (routeParts.length == matchCounter) {
-                        dataList.push(
-                            {
-                                route: route,
-                                data: data
-                            }
-                        );
-
-                        // saved the current route id
-                        router.currentId = route.id;
-                        router.currentParameters = data;
-
-                        break;
-                    }
-
-                }
+            if (silent) {
+                setTimeout(function() {
+                    addListener();
+                }, 1);
             }
 
+        }, 1);
+    };
+
+    routie.noConflict = function() {
+        w[reference] = oldReference;
+        return routie;
+    };
+
+    var getHash = function() {
+        return window.location.hash.substring(1);
+    };
+
+    var checkRoute = function(hash, route) {
+        var params = [];
+        if (route.match(hash, params)) {
+            route.run(params);
+            return true;
         }
+        return false;
+    };
 
-        return dataList;
-    }
-
-    function checkRoutes() {
-        var currentUrl = parseUrl(location.pathname);
-
-        // check if something is catched
-        var actionList = getParameters(currentUrl);
-
-        // ietrate trough result (but it will only kick in one)
-        for (var i = 0, ii = actionList.length; i < ii; i++) {
-            actionList[i].route.callback(actionList[i].data);
+    var hashChanged = routie.reload = function() {
+        var hash = getHash();
+        for (var i = 0, c = routes.length; i < c; i++) {
+            var route = routes[i];
+            if (checkRoute(hash, route)) {
+                return;
+            }
         }
-    }
+    };
 
-
-    function handleRoutes(e) {
-        if (e != null && e.originalEvent && e.originalEvent.state !== undefined) {
-            checkRoutes();
+    var addListener = function() {
+        if (w.addEventListener) {
+            w.addEventListener('hashchange', hashChanged, false);
+        } else {
+            w.attachEvent('onhashchange', hashChanged);
         }
-        else if (hasHashState) {
-            checkRoutes();
-        }
-        else if (!hasHashState && !hasPushState) {
-            checkRoutes();
-        }
-    }
+    };
 
-
-    if (!$.router) {
-        $.router = router;
-    }
-    else {
-        if (window.console && window.console.warn) {
-            console.warn("jQuery.status already defined. Something is using the same name.");
+    var removeListener = function() {
+        if (w.removeEventListener) {
+            w.removeEventListener('hashchange', hashChanged);
+        } else {
+            w.detachEvent('onhashchange', hashChanged);
         }
-    }
+    };
+    addListener();
 
-})(jQuery);
+    w[reference] = routie;
+
+})(window);

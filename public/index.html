@@ -1,11 +1,18 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>Administration portal</title>
 
     <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
     <link href="css/style.css" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="/css/jquery-ui.css"/>
+
+    <link rel="stylesheet" type="text/css" media="screen" href="/css/ui.jqgrid.css"/>
 
 </head>
 <body>
@@ -15,32 +22,35 @@
 
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Home</a></li>
-                </ul>
-                <ul class="nav navbar-nav">
-                    <li><a href="#!/cusotmer/add">Add new customer</a></li>
-                </ul>
+                    <li id="customerAddLink"><a href="#/customer/add">Add new customer</a></li>
 
-                <ul class="nav navbar-nav">
-                    <li><a href="#!/cusotmer/list">List all customers</a></li>
-                </ul>
+                    <li id="customersListLink"><a href="#/customer/list">List all customers</a></li>
 
-                <ul class="nav navbar-nav">
-                    <li><a href="#!/call/add">Add new call</a></li>
-                </ul>
+                    <li id="callAddLink"><a href="#/call/add">Add new call</a></li>
 
-                <ul class="nav navbar-nav">
-                    <li><a href="#!/call/list">List all calls</a></li>
+                    <li id="callsListLink"><a href="#/call/list">List all calls</a></li>
                 </ul>
             </div>
 
         </div>
     </nav>
+    <div id="content" class="container-fluid">
+
+    </div>
 </div>
 
 <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/jquery.router.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/jquery.router.js"></script>
+
+<!-- This is the Javascript file of jqGrid -->
+<script type="text/ecmascript" src="/js/jquery.jqGrid.min.js"></script>
+
+
+<script src="/js/templates.js"></script>
+<script src="/js/main.js"></script>
+
 </body>
 </html>

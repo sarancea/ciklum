@@ -1,6 +1,6 @@
   AuthType Basic
   AuthName "Cicklum Test"
-  AuthUserFile /var/www/.htpasswd
+  AuthUserFile /var/www/cikclum-zend-test/.htpasswd
   Require valid-user
 
   SetEnv APPLICATION_ENV "development"
