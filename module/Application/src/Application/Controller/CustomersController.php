@@ -24,5 +24,5 @@ class CustomersController extends ApiAbstract
      * The form class
      * @var string
      */
-    protected $formClass = 'Applications\Form\CustomerForm';
+    protected $formClass = 'Application\Form\CustomerForm';
 }

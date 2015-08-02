@@ -1,16 +1,21 @@
 <?php
 namespace Application\Library\Controller;
 
+use Application\Form\ModelFilterForm;
 use Application\Library\Exception\ValidationException;
+use Closure;
 use Doctrine\Entity;
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\Tools\Pagination\Paginator as ORMPaginator;
+use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Form\Form;
 use Zend\Http\Response;
 use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\Mvc\MvcEvent;
+use Zend\Paginator\Paginator;
 use Zend\Stdlib\Hydrator\ClassMethods;
 use Zend\View\Model\JsonModel;
 
@@ -59,24 +64,61 @@ abstract class ApiAbstract extends AbstractRestfulController
     /**
      * Return list of resources
      *
+     * @param callable $queryBuilderCallback
+     * @param callable $queryCallback
+     * @throws \Application\Library\Exception\ValidationException
      * @return mixed
      */
-    public function getList()
+    public function getList(\Closure $queryBuilderCallback = null, \Closure $queryCallback = null)
     {
+        $form = new ModelFilterForm();
+        $form->setData($this->params()->fromQuery());
+
+        if (!$form->isValid()) {
+            throw new ValidationException($form->getMessages(), 400);
+        }
+
+        $limit = $form->getData()['rows'];
+        $page = $form->getData()['page'];
+
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
         $queryBuilder->select('c')
             ->from($this->entityClass, 'c');
 
-        $results = $queryBuilder->getQuery()
-            ->getResult(AbstractQuery::HYDRATE_ARRAY);
+        if (!is_null($queryBuilderCallback)) {
+            $queryBuilderCallback($queryBuilder);
+        }
 
-        return new JsonModel($results);
+
+        $query = $queryBuilder->getQuery()
+            ->setHydrationMode(Query::HYDRATE_ARRAY);
+
+        if (!is_null($queryCallback)) {
+            $queryCallback($query);
+        }
+
+
+        $paginator = new Paginator(
+            new DoctrinePaginator(new ORMPaginator($query))
+        );
+        $paginator->setCurrentPageNumber($page)
+            ->setItemCountPerPage($limit);
+
+        $return = array(
+            'page' => $paginator->getCurrentPageNumber(),
+            'total' => ceil($paginator->getTotalItemCount() / $limit),
+            'records' => $paginator->getTotalItemCount(),
+            'rows' => $paginator->getCurrentItems()->getArrayCopy(),
+        );
+
+        return new JsonModel($return);
     }
 
     /**
      * @return EntityManager
      */
-    public function getEntityManager()
+    public
+    function getEntityManager()
     {
         return $this->getServiceLocator()->get('Doctrine\ORM\EntityManager');
     }
@@ -88,7 +130,8 @@ abstract class ApiAbstract extends AbstractRestfulController
      * @throws \Doctrine\ORM\EntityNotFoundException
      * @return mixed
      */
-    public function get($id)
+    public
+    function get($id)
     {
         $entityManager = $this->getEntityManager();
 
@@ -115,15 +158,16 @@ abstract class ApiAbstract extends AbstractRestfulController
     public function create($data)
     {
         /** @var Form $form */
-        $form = new $this->formClass();
+        $form = new $this->formClass($this->getServiceLocator());
         $form->setData($data);
 
         if (!$form->isValid()) {
-            throw new ValidationException([$this->entityClass => $form->getMessages()], 400);
+            throw new ValidationException($form->getMessages(), 400);
         }
 
         /** @var Entity $matchInfo */
         $entity = $form->getData();
+
 
         $this->getEntityManager()->persist($entity);
         $this->getEntityManager()->flush();
@@ -151,13 +195,13 @@ abstract class ApiAbstract extends AbstractRestfulController
         }
 
         /** @var Form $form */
-        $form = new $this->formClass();
+        $form = new $this->formClass($this->getServiceLocator());
         $form->bind($entity);
 
         $form->setData($data);
 
         if (!$form->isValid()) {
-            throw new ValidationException([$this->entityClass => $form->getMessages()], 400);
+            throw new ValidationException($form->getMessages(), 400);
         }
 
 
@@ -167,7 +211,7 @@ abstract class ApiAbstract extends AbstractRestfulController
         $hydrator = new ClassMethods();
 
         return new JsonModel($hydrator->extract($entity));
-        
+
     }
 
 
@@ -178,7 +222,8 @@ abstract class ApiAbstract extends AbstractRestfulController
      * @throws \Doctrine\ORM\EntityNotFoundException
      * @return mixed
      */
-    public function delete($id)
+    public
+    function delete($id)
     {
         $entity = $this->getEntityManager()->find($this->entityClass, $id);
 
@@ -204,7 +249,8 @@ abstract class ApiAbstract extends AbstractRestfulController
      *
      * @return $this|\Zend\Mvc\Controller\AbstractController
      */
-    public function setEventManager(EventManagerInterface $events)
+    public
+    function setEventManager(EventManagerInterface $events)
     {
         parent::setEventManager($events);
 

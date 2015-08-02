@@ -18,7 +18,7 @@ class Customer
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
      */
-    protected $id;
+    public $id;
 
     /** @ORM\Column(type="string") */
     protected $first_name;
@@ -64,11 +64,27 @@ class Customer
     }
 
     /**
+     * @param mixed $first_name
+     */
+    public function setFirstName($first_name)
+    {
+        $this->first_name = $first_name;
+    }
+
+    /**
      * @return mixed
      */
     public function getLastName()
     {
         return $this->last_name;
+    }
+
+    /**
+     * @param mixed $last_name
+     */
+    public function setLastName($last_name)
+    {
+        $this->last_name = $last_name;
     }
 
     /**
@@ -80,11 +96,27 @@ class Customer
     }
 
     /**
+     * @param mixed $phone
+     */
+    public function setPhone($phone)
+    {
+        $this->phone = $phone;
+    }
+
+    /**
      * @return mixed
      */
     public function getAddress()
     {
         return $this->address;
+    }
+
+    /**
+     * @param mixed $address
+     */
+    public function setAddress($address)
+    {
+        $this->address = $address;
     }
 
     /**

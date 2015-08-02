@@ -17,15 +17,21 @@ class Call
     protected $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Customer", inversedBy="calls")
+     * @ORM\ManyToOne(targetEntity="Customer", inversedBy="calls", fetch="EAGER")
+     * @ORM\JoinColumn(name="customer_id", referencedColumnName="id")
      */
     protected $customer;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $customer_id;
 
 
     /** @ORM\Column(type="string") */
     protected $subject;
 
-    /** @ORM\Column(type="string") */
+    /** @ORM\Column(type="text") */
     protected $content;
 
     /**
@@ -37,11 +43,27 @@ class Call
     }
 
     /**
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
      * @return mixed
      */
     public function getSubject()
     {
         return $this->subject;
+    }
+
+    /**
+     * @param mixed $subject
+     */
+    public function setSubject($subject)
+    {
+        $this->subject = $subject;
     }
 
     /**
@@ -53,10 +75,27 @@ class Call
     }
 
     /**
+     * @param mixed $content
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
+    }
+
+    /**
      * @return mixed
      */
-    public function fetchCustomer()
+    public function getCustomer()
     {
         return $this->customer;
     }
+
+    /**
+     * @param mixed $customer
+     */
+    public function setCustomer($customer)
+    {
+        $this->customer = $customer;
+    }
+
 }

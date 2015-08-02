@@ -1,9 +1,10 @@
 <?php
 
-namespace Auth\Form;
+namespace Application\Form;
 
 use Zend\Form\Form;
 use Zend\Form\FormInterface;
+use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\Hydrator\ClassMethods as ClassMethodsHydrator;
 
 class CustomerForm extends Form
@@ -12,7 +13,7 @@ class CustomerForm extends Form
     /**
      * Init form
      */
-    public function __construct()
+    public function __construct(ServiceManager $serviceLocator)
     {
 
         // we want to ignore the name passed
@@ -20,16 +21,13 @@ class CustomerForm extends Form
 
         $this->setHydrator(new ClassMethodsHydrator());
 
-        $this->add([
-            'type' => 'Application\Form\CustomerFieldset',
-            'options' => [
-                'use_as_base_fieldset' => true,
-            ],
-        ]);
+
+        $fieldSet = new CustomerFieldset($serviceLocator);
+        $fieldSet->setUseAsBaseFieldset(true);
+        $this->add($fieldSet);
 
 
         $this->setValidationGroup(FormInterface::VALIDATE_ALL);
-
     }
 
 

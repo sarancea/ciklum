@@ -1,6 +1,6 @@
 <?php
 
-namespace Match\Form;
+namespace Application\Form;
 
 use Application\Entity\Customer;
 use Zend\Form\Fieldset;
@@ -8,16 +8,16 @@ use Zend\InputFilter\InputFilterProviderInterface;
 use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\Hydrator\ClassMethods;
 
-class MatchFieldset extends Fieldset implements InputFilterProviderInterface
+class CustomerFieldset extends Fieldset implements InputFilterProviderInterface
 {
     /**
      * @var \Zend\ServiceManager\ServiceManager
      */
     protected $serviceManager;
 
-    public function __construct(ServiceManager $serviceManager)
+    public function __construct(ServiceManager $serviceLocator)
     {
-        $this->serviceManager = $serviceManager;
+        $this->serviceManager = $serviceLocator;
 
         parent::__construct('customer');
 
@@ -28,6 +28,11 @@ class MatchFieldset extends Fieldset implements InputFilterProviderInterface
             ->setHydrator($hydrator)
             ->setObject(new Customer());
 
+
+        $this->add([
+            'name' => 'id',
+            'type' => 'Hidden'
+        ]);
 
         $this->add([
             'name' => 'first_name',
@@ -68,26 +73,78 @@ class MatchFieldset extends Fieldset implements InputFilterProviderInterface
 
         $entityManager = $this->serviceManager->get('Doctrine\ORM\EntityManager');
 
+
         return [
             'first_name' => [
                 'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'StripTags',
+                    ],
+                    [
+                        'name' => 'StripNewLines',
+                    ],
+                    [
+                        'name' => 'StringTrim',
+                    ],
+                    [
+                        'name' => 'StringToLower',
+                    ],
+                ]
 
             ],
             'last_name' => [
                 'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'StripTags',
+                    ],
+                    [
+                        'name' => 'StripNewLines',
+                    ],
+                    [
+                        'name' => 'StringTrim',
+                    ],
+                    [
+                        'name' => 'StringToLower',
+                    ],
+                ]
+
+            ],
+            'address' => [
+                'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'StripTags',
+                    ],
+                    [
+                        'name' => 'StripNewLines',
+                    ],
+                    [
+                        'name' => 'StringTrim',
+                    ],
+                    [
+                        'name' => 'StringToLower',
+                    ],
+                ]
 
             ],
 
             'phone' => [
                 'required' => true,
-                'validators' => [
+                'filters' => [
                     [
-                        'name' => 'DoctrineModule\Validator\NoObjectExists',
-                        'options' => array(
-                            'object_repository' => $entityManager->getRepository('Application\Entity\Customer'),
-                            'fields' => 'phone'
-                        )
-                    ]
+                        'name' => 'StripTags',
+                    ],
+                    [
+                        'name' => 'StripNewLines',
+                    ],
+                    [
+                        'name' => 'StringTrim',
+                    ],
+                    [
+                        'name' => 'StringToLower',
+                    ],
                 ]
             ],
         ];
